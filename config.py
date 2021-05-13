@@ -16,7 +16,9 @@ class Config:
         dropout,
         n_head,
         vocab_size,
-        seq_max_length
+        seq_max_length,
+        checkpoint_step,
+        log_step
     ):
         self.cfg_dict = {
             'exp_name': exp_name,
@@ -29,7 +31,9 @@ class Config:
             'dropout': dropout,
             'n_head': n_head,
             'vocab_size': vocab_size,
-            'seq_max_length': seq_max_length
+            'seq_max_length': seq_max_length,
+            'checkpoint_step': checkpoint_step,
+            'log_step': log_step
         }
 
         self.args = argparse.Namespace(**self.cfg_dict)

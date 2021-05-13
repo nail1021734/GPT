@@ -9,6 +9,7 @@ argparse = "*"
 sentencepiece = "*"
 tokenizers = "*"
 tqdm = "*"
+tensorboard = "*"
 
 [dev-packages]
 
