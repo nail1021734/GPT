@@ -1,1 +1,1 @@
-{"exp_name": "tst", "epoch": 5, "learning_rate": 0.01, "batch_size": 8, "layer_num": 3, "d_model": 256, "dim_feedforward": 1024, "dropout": 0.1, "n_head": 8, "vocab_size": 40000, "seq_max_length": 512, "checkpoint_step": 3000, "log_step": 10}
+{"exp_name": "tst", "epoch": 200, "learning_rate": 0.01, "batch_size": 8, "layer_num": 2, "d_model": 256, "dim_feedforward": 1024, "dropout": 0.1, "n_head": 8, "vocab_size": 40000, "seq_max_length": 512, "checkpoint_step": 3000, "log_step": 500}

@@ -7,14 +7,19 @@ from tokenizers.pre_tokenizers import Whitespace
 
 class BPETokenizer:
     def __init__(self):
-        self.tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
+        self.tokenizer = Tokenizer(BPE(unk_token="<unk>"))
         self.tokenizer.pre_tokenizer = Whitespace()
 
     def train(self, dataset, vocab_size):
+        special_tokens=["<unk>", "[CLS]", "[SEP]", "[PAD]", "[MASK]", "<en>", "<num>"]
+        special_tokens.extend([f'<per{i}>' for i in range(10)])
+        special_tokens.extend([f'<org{i}>' for i in range(10)])
+        special_tokens.extend([f'<loc{i}>' for i in range(10)])
+
         # Get BPE trainer.
         trainer = BpeTrainer(
             vocab_size=vocab_size,
-            special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"]
+            special_tokens=special_tokens
         )
         # Train tokenizer.
         self.tokenizer.train_from_iterator(dataset, trainer)
@@ -52,7 +57,7 @@ class BPETokenizer:
         """
         return self.tokenizer.decode(
             ids=token_ids,
-            skip_special_tokens=True
+            skip_special_tokens=False
         )
 
     def batch_decode(self, token_ids_list):
@@ -61,7 +66,7 @@ class BPETokenizer:
         """
         return self.tokenizer.decode_batch(
             sequences=token_ids_list,
-            skip_special_tokens=True
+            skip_special_tokens=False
         )
 
     def save(self, filename):

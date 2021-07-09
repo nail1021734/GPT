@@ -13,19 +13,19 @@ from tokenizer import BPETokenizer
 if __name__ == "__main__":
     # Set model config.
     cfg = Config(
-        exp_name='tst',
-        epoch=5,
-        learning_rate=1e-2,
+        exp_name='exp15_adamW_v2.3',
+        epoch=200,
+        learning_rate=2e-5,
         batch_size=8,
-        layer_num=3,
+        layer_num=8,
         d_model=256,
-        dim_feedforward=1024,
+        dim_feedforward=2048,
         dropout=0.1,
         n_head=8,
-        vocab_size=40000,
+        vocab_size=30000,
         seq_max_length=512,
-        checkpoint_step=3000,
-        log_step=10
+        checkpoint_step=5000,
+        log_step=500
     )
     cfg.save()
 
@@ -42,7 +42,8 @@ if __name__ == "__main__":
         torch.backends.cudnn.benchmark = False
 
     # Load dataset and create data_loader
-    dataset = LMNewsDataset(db_path='news.db')
+    dataset = LMNewsDataset(db_path='news_v2.3.db')
+    dataset = torch.utils.data.Subset(dataset, list(range(40000)))
     data_loader = torch.utils.data.DataLoader(
         dataset=dataset,
         shuffle=True,
@@ -50,23 +51,22 @@ if __name__ == "__main__":
     )
 
     # Load tokenizer.
-    tokenizer = BPETokenizer.load(cfg.args.exp_name)
+    # tokenizer = BPETokenizer.load(cfg.args.exp_name)
 
     # Use bpe to Create tokenizer.
-    # tokenizer = BPETokenizer()
-    # tokenizer.train(
-    #     dataset=dataset,
-    #     vocab_size=cfg.args.vocab_size
-    # )
-    # tokenizer.save(cfg.args.exp_name)
-
+    tokenizer = BPETokenizer()
+    tokenizer.train(
+        dataset=dataset,
+        vocab_size=cfg.args.vocab_size
+    )
+    tokenizer.save(cfg.args.exp_name)
 
     # Create model by config hyperparameter.
     model = GPT(
         d_model=cfg.args.d_model,
         n_head=cfg.args.n_head,
         dim_feedforward=cfg.args.dim_feedforward,
-        dropout=0.1,
+        dropout=cfg.args.dropout,
         layer_num=cfg.args.layer_num,
         padding_idx=tokenizer.tokenizer.token_to_id('[PAD]'),
         vocab_size=tokenizer.tokenizer.get_vocab_size()
@@ -78,8 +78,19 @@ if __name__ == "__main__":
 
     # Set criterion and optimizer.
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=cfg.args.learning_rate)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.args.learning_rate)
 
+    # Set schedular.(milestones)
+    # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[3, 10, 30, 60, 120], gamma=0.1)
+
+    # Set schedular.(warm up with milestones)
+    # warm_up_step = 50000
+    # epoch_step = 5000
+
+    # def step_function(epoch): return (epoch+1) / warm_up_step if epoch < warm_up_step else 0.1**len([
+    #     m for m in [epoch_step*10, epoch_step*20] if m < epoch])
+    # scheduler = torch.optim.lr_scheduler.LambdaLR(
+    #     optimizer, lr_lambda=step_function)
 
     # Init `SummaryWriter`.
     log_path = os.path.join('log', cfg.args.exp_name)
@@ -88,12 +99,12 @@ if __name__ == "__main__":
     writer = torch.utils.tensorboard.SummaryWriter(log_path)
 
     iteration = 0
+    total_loss = 0
     for i in range(cfg.args.epoch):
         epoch_iterator = tqdm(
             data_loader,
             desc=f'epoch: {i}, loss: {0:.6f}'
         )
-        total_loss = 0
         for x in epoch_iterator:
             iteration += 1
 
@@ -105,7 +116,7 @@ if __name__ == "__main__":
 
             # Convert `List[int]` to `torch.Tensor`.
             src = torch.tensor([sample[:-1] for sample in seq_ids]).to(device)
-            target = torch.tensor([sample[1:] for sample in seq_ids]).to(device)
+            tgt = torch.tensor([sample[1:] for sample in seq_ids]).to(device)
 
             # Let mask into right form.
             batch_mask = torch.tensor(
@@ -118,8 +129,8 @@ if __name__ == "__main__":
 
             # Calculate loss.
             pred = pred.reshape(-1, tokenizer.tokenizer.get_vocab_size())
-            target = target.reshape(-1)
-            loss = criterion(pred, target)
+            tgt = tgt.reshape(-1)
+            loss = criterion(pred, tgt)
 
             total_loss += loss.item()
             epoch_iterator.set_description(
@@ -130,10 +141,11 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
-
+            # scheduler.step()
             # Output to tensorboard.
-            if iteration %  cfg.args.log_step == 0:
-                writer.add_scalar('loss', total_loss / cfg.args.log_step, iteration)
+            if iteration % cfg.args.log_step == 0:
+                writer.add_scalar('loss', total_loss /
+                                  cfg.args.log_step, iteration)
                 total_loss = 0
 
             # Save checkpoint.

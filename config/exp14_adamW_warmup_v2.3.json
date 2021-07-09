@@ -1,0 +1,1 @@
+{"exp_name": "exp14_adamW_warmup_v2.3", "epoch": 200, "learning_rate": 0.0001, "batch_size": 8, "layer_num": 8, "d_model": 256, "dim_feedforward": 2048, "dropout": 0.1, "n_head": 8, "vocab_size": 30000, "seq_max_length": 512, "checkpoint_step": 5000, "log_step": 500}

@@ -38,7 +38,7 @@ class LMNewsDataset(torch.utils.data.Dataset):
     Dataset for languange models.
     return a string contain title and article as below format
 
-    return: title + [SEP] + article
+    return: [SEP] + title + [SEP] + article + [SEP]
     """
 
     def __init__(self, db_path: str):
@@ -59,7 +59,7 @@ class LMNewsDataset(torch.utils.data.Dataset):
 
         # Merge title and article into single string.
         self.merge_data = [
-            f'{self.titles[i]}[SEP]{self.articles[i]}' for i in range(len(self.titles))]
+            f'[SEP]{self.titles[i]}[SEP]{self.articles[i]}[SEP]' for i in range(len(self.titles))]
 
     def __getitem__(self, index: int):
         return self.merge_data[index]

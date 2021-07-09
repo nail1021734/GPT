@@ -59,6 +59,7 @@ class GPT(torch.nn.Module):
         mask = torch.ones((seq_len, seq_len), dtype=torch.bool)
         mask = torch.triu(mask, diagonal=1).to(batch_seq.device)
         x = self.embedding(batch_seq)
+        x = self.PE(x)
         x = x.transpose(0, 1)
         x = self.model(
             x,
@@ -67,6 +68,16 @@ class GPT(torch.nn.Module):
         )
         x = x.transpose(0, 1)
         x = x @ self.embedding.weight.transpose(0, 1)
-        x = torch.nn.functional.softmax(x, dim=-1)
 
         return x
+
+    def predict(self, batch_seq):
+        x = self.embedding(batch_seq)
+        x = self.PE(x)
+        x = x.transpose(0, 1)
+        x = self.model(x)
+        x = x.transpose(0, 1)
+        x = x @ self.embedding.weight.transpose(0, 1)
+        x = torch.nn.functional.softmax(x, dim=-1)
+        return x
+
