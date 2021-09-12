@@ -18,7 +18,8 @@ class Config:
         vocab_size,
         seq_max_length,
         checkpoint_step,
-        log_step
+        log_step,
+        update_step
     ):
         self.cfg_dict = {
             'exp_name': exp_name,
@@ -33,7 +34,8 @@ class Config:
             'vocab_size': vocab_size,
             'seq_max_length': seq_max_length,
             'checkpoint_step': checkpoint_step,
-            'log_step': log_step
+            'log_step': log_step,
+            'update_step': update_step
         }
 
         self.args = argparse.Namespace(**self.cfg_dict)

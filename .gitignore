@@ -1,3 +1,8 @@
 news*.db
 **/checkpoint
 **/log
+**/venv
+**/__pycache__
+**/.venv
+**/tokenizer
+*.db

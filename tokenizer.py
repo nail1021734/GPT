@@ -11,7 +11,7 @@ class BPETokenizer:
         self.tokenizer.pre_tokenizer = Whitespace()
 
     def train(self, dataset, vocab_size):
-        special_tokens=["<unk>", "[CLS]", "[SEP]", "[PAD]", "[MASK]", "<en>", "<num>"]
+        special_tokens=["<unk>", "[CLS]", "[SEP]", "[PAD]", "[MASK]", "[TITLE]", "[ARTICLE]", "[REF]", "[END]", "<en>", "<num>"]
         special_tokens.extend([f'<per{i}>' for i in range(10)])
         special_tokens.extend([f'<org{i}>' for i in range(10)])
         special_tokens.extend([f'<loc{i}>' for i in range(10)])
